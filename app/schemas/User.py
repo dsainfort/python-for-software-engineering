@@ -10,7 +10,7 @@ class User(BaseModel):
         max_length=20,
         default=None
     )
-    
+
     liked_posts: list[int] = Field(
         description="Array of liked ids"
     )
@@ -28,4 +28,3 @@ class ManyUserResponse(BaseModel):
 
 class CreateUserRes(BaseModel):
     user_id: int
-    

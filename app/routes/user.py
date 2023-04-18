@@ -1,16 +1,22 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from app.schemas.User import (
     CreateUserRes,
     Profile,
     ManyUserResponse,
 )
 from app.services.user import UserService
+import logging
+from app.dependencies import rate_limit
+
+
+logger = logging.getLogger(__name__)
 
 
 def create_user_router() -> APIRouter:
     user_router = APIRouter(
         prefix="/user",
-        tags=["User"]
+        tags=["User"],
+        dependencies=[Depends(rate_limit)]
     )
     user_service = UserService()
 
@@ -24,7 +30,6 @@ def create_user_router() -> APIRouter:
     async def get_user_by__id(user_id: int):
         """
         Endpoint for retrieving a full user profile byt the user's unique ID.
-
         :param user_id: int - unique monotonically increasing integer id
         :return: FullUserProfile
         """
@@ -42,7 +47,8 @@ def create_user_router() -> APIRouter:
     async def remove_user(user_id: int):
         await user_service.delete_user(user_id)
 
-    @user_router.post("/", response_model=CreateUserRes)
+
+    @user_router.post("/", response_model=CreateUserRes, status_code=201)
     async def add_user(full_user_info: Profile):
         user_id = await user_service.create_update_user(full_user_info)
         return CreateUserRes(user_id=user_id)
